@@ -23,7 +23,10 @@ class XML2Dict(object):
     _xml = None
 
     def __init__(self, xml, ns_clean=True):
-        parser = etree.XMLParser(ns_clean=ns_clean, remove_blank_text=True)
+        parser = etree.XMLParser(ns_clean=ns_clean, remove_blank_text=True,
+                                 strip_cdata=False,
+                                 remove_comments=True,
+                                 )
         self._xml = etree.XML(xml, parser)
 
     def to_dict(self, ordered_dict=False):
@@ -40,7 +43,11 @@ class XML2Dict(object):
         if len(node.attrib):
             xml_dict['@attributes'] = node.attrib
         if node.text:
-            xml_dict['@text'] = node.text
+            s = etree.tostring(node)
+            if b'![CDATA[' in s:
+                xml_dict['@cdata'] = node.text
+            else:
+                xml_dict['@text'] = node.text
 
         # add children if any
         if len(node):
@@ -51,7 +58,6 @@ class XML2Dict(object):
                 xml_dict[child.tag].append(self._convert(child, ordered_dict))
 
             # flatten the arrays
-            # print(xml_dict.items())
             for key, value in xml_dict.items():
                 if type(value) == list and len(value) == 1:
                     # print("{}: {}".format(key, value))
@@ -85,7 +91,7 @@ books = OrderedDict({
                 'available': None
             },
             'title': '1984',
-            'isbn': 973523442132L,
+            'isbn': 973523442132,
         },
         {
             '@attributes': {
@@ -94,7 +100,7 @@ books = OrderedDict({
             },
             'title': {'@cdata': 'Foundation'},
             'price': '$15.61',
-            'isbn': 57352342132L,
+            'isbn': 57352342132,
         },
         {
             '@attributes': {
@@ -108,7 +114,7 @@ books = OrderedDict({
                 },
                 '@text': '$18.00'
             },
-            'isbn': 341232132L
+            'isbn': 341232132
         }
     ]
 })

@@ -22,7 +22,7 @@ class Dict2XML(object):
     """
     _xml = None
 
-    def __init__(self, root_node_name, dictionary, force_cdata=False):
+    def __init__(self, root_node_name, dictionary, force_cdata=False, indent='  '):
         """
         Converts a Python dictionary to XML using the lxml.etree library
         :param root_node_name: name of the root node
@@ -31,6 +31,7 @@ class Dict2XML(object):
         """
         self._xml = etree.Element(root_node_name)
         self._convert(self._xml, dictionary, force_cdata=force_cdata)
+        self.indent = indent
 
     def to_xml_string(self, encoding='UTF-8', pretty_print=True, xml_declaration=True):
         """
@@ -40,6 +41,8 @@ class Dict2XML(object):
         :param xml_declaration: Print the XML Declaration tag in the output. Default True
         :return: XML string
         """
+        etree.indent(self._xml, space=self.indent)
+        # etree.indent(self._xml, space="    ")
         return etree.tostring(self._xml, xml_declaration=xml_declaration, pretty_print=pretty_print,
                               encoding=encoding, method='xml')
 
